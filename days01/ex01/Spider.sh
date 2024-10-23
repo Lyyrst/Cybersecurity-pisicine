@@ -19,7 +19,6 @@ while getopts ":rl:p:" opt; do
             RECURSIVE=true
             ;;
         l )
-            # Vérifier si l'argument de profondeur est un nombre
             if ! [[ $OPTARG =~ ^[0-9]+$ ]]; then
                 echo "Error: -l requires a numeric argument."
                 help
@@ -28,10 +27,8 @@ while getopts ":rl:p:" opt; do
             ;;
         p )
             SAVE_DIR=$OPTARG
-            # Vérifier si le répertoire existe, sinon essayer de le créer
             if [ ! -d "$SAVE_DIR" ]; then
                 mkdir -p "$SAVE_DIR"
-                # Vérifier si la création du répertoire a réussi
                 if [ $? -ne 0 ]; then
                     echo "Error: Unable to create directory '$SAVE_DIR'. Please check permissions."
                     exit 1
@@ -76,14 +73,9 @@ download_imgs() {
     html=$(curl -s "$url" | tr -d '\000')
 
     img_urls=$(echo "$html" | grep -oP "(http[s]?:\/\/[^\"']*\.(?:$IMG_TYPE))")
-    count=0
     for img_url in $img_urls; do
-        if [ "$count" -ge 1 ]; then
-            break
-        fi
         echo "Downloading $img_url..."
         curl -s -o "$save_dir/$(basename "$img_url")" "$img_url"
-        ((count++))
     done
 
     if [ "$RECURSIVE" = true ] && [ "$recursive_depth" -gt 0 ]; then
