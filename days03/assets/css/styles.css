@@ -1,0 +1,203 @@
+a {
+    color: white;
+    text-decoration: none;
+}
+
+body {
+    background-color: #1e1919;
+    padding-top: 56px;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.hero {
+    --fsize: 40px;
+}
+
+.navbar {
+    background: linear-gradient(-45deg, #ffffff, #8bacde, #8bacde, #ffffff);
+    animation: gradient 30s infinite ;
+    background-size: 400% 400%;
+}
+
+@media (min-width: 992px) {
+
+    .nav-text {
+        position: relative;
+        --width: 0%;
+        --left: 0;
+    }
+
+    .nav-text:hover {
+        --width: 60%;
+        --left: 60;
+    }
+
+    .nav-text::before {
+        content: "";
+        height: 2px;
+        width: var(--width);
+        background-color: #323232;
+        position: absolute;
+        left: calc(50% - 0.5% * var(--left));
+        bottom: 15%;
+        transition: width 500ms, left 500ms;
+    }
+
+    .hero {
+        --fsize: 70px;
+    }
+}
+
+.hero {
+    position: relative;
+    font-family: JetBrains Sans, Inter, system-ui, -apple-system, "system-ui", Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
+    font-feature-settings: "kern", "liga", "calt";
+    font-size: var(--fsize);
+    font-style: normal;
+    font-weight: 600;
+    line-height: 92px;
+    letter-spacing: -.736px;
+    color: white;
+    background-color: #1e1919;
+}
+
+.hero .lines {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.hero .lines .line {
+    height: 100%;
+    width: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero .lines .line::before {
+    content: "";
+    position: absolute;
+    height: 15vh;
+    top: -50%;
+    width: 100%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 75%, #ffffff 100%);
+    -webkit-animation: drop 7s 0s infinite;
+    animation: drop 7s 0s infinite;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+    -webkit-animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
+    animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
+}
+
+.hero .lines .line:nth-child(2)::before {
+    animation-delay: 1.7s;
+}
+
+.hero .lines .line:nth-child(3)::before {
+    animation-delay: 0.8s;
+}
+
+.hero .lines .line:nth-child(4)::before {
+    animation-delay: 1.5s;
+}
+
+.hero .lines .line:nth-child(5)::before {
+    animation-delay: 2.2s;
+}
+
+.hero .lines .line:nth-child(6)::before {
+    animation-delay: 0.7s;
+}
+
+.hero .lines .line:nth-child(7)::before {
+    animation-delay: 1.3s;
+}
+
+.hero .lines .line:nth-child(8)::before {
+    animation-delay: 0.9s;
+}
+
+.hero .lines .line:nth-child(10)::before {
+    animation-delay: 0.5s;
+}
+
+@keyframes drop {
+    0% {
+        top: -50%;
+    }
+    100% {
+        top: 120%;
+    }
+}
+
+.features {
+    background-color: #242121;
+}   
+
+.features-text {
+    color: white;
+    font-size: 48px;
+    font-family: JetBrains Sans, Inter, system-ui, -apple-system, "system-ui", Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Droid Sans, Helvetica Neue, Arial, sans-serif;
+}
+
+.item-card {
+    color: white;
+}
+
+.card-title {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.item-card img {
+    width: 100px;
+    padding-bottom: 8px;
+}
+
+.ranking {
+    background-color: #242121;
+}
+
+.ranking .first {
+    border-color: transparent;
+    border-width: 2px;
+}
+
+.page-end {
+    color: white;
+}
+
+.page-end-content {
+    font-size: 60px;
+    font-family: Arial;
+}
+
+.page-end-btn {
+}
+
+.page-footer {
+    background-color: black;
+    color: white;
+}
+
+.footer-line {
+    height: 1px;
+    background-color: white;
+}
