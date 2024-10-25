@@ -9,14 +9,13 @@ import java.util.stream.IntStream;
  */
 public class HotpGenerator {
     private static HotpGenerator instance;
-    private long counter = 0;
 
     /**
      * Gets instance.
      *
      * @return the instance
      */
-    public HotpGenerator getInstance() {
+    public static HotpGenerator getInstance() {
         if (instance == null) {
             instance = new HotpGenerator();
         }
@@ -30,9 +29,11 @@ public class HotpGenerator {
      * @return the code
      */
     public String generateHOTPcode(String key) {
+        String verifiedKey = (key.length() % 2 == 0) ? key : key.substring(0, key.length() - 1);
         try {
-            byte[] keyBytes = this.hexStringToByteArray(key);
-            byte[] counterBytes = ByteBuffer.allocate(8).putLong(this.counter).array();
+            byte[] keyBytes = this.hexStringToByteArray(verifiedKey);
+            long counter = System.currentTimeMillis() / 1000 / 30;
+            byte[] counterBytes = ByteBuffer.allocate(8).putLong(counter).array();
 
             Mac mac = Mac.getInstance("HmacSHA1");
             SecretKey keySpec = new SecretKeySpec(keyBytes, "HmacSHA1");
@@ -43,7 +44,7 @@ public class HotpGenerator {
 
             return String.format("%06d", otp);
         } catch (Exception e) {
-            throw new RuntimeException("Error: code generation failed.", e);
+            throw new RuntimeException(e);
         }
     }
 

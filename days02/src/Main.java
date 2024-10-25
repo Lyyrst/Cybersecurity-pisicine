@@ -22,18 +22,18 @@ public class Main {
                     try {
                         Files.write(OUTPUT_FILE_PATH, encryptKey(key).getBytes());
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException("Error: encrypt key failed, check your key", e);
                     }
                 } else {
-                    throw new Error("Invalid key");
+                    throw new Error("Error: Invalid given key");
                 }
                 break;
             case "-k":
                 try {
                     String decryptedKey = decryptKey(getKeyFromArgs(args[1]).trim());
-                    System.out.println(decryptedKey);
+                    System.out.println(HotpGenerator.getInstance().generateHOTPcode(decryptedKey));
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    throw new Error("Error: code generation failed: check your key", e);
                 }
                 break;
             case "-h":
