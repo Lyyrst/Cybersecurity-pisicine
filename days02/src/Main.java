@@ -8,7 +8,7 @@ import java.util.Base64;
 
 public class Main {
     private static final Path OUTPUT_FILE_PATH = Path.of("ft_otp.key");
-    private static final String SECRET_KEY = "1234567890123456";
+    private static final String SECRET_KEY = System.getenv("SECRET_KEY");
 
     public static void main(String[] args) {
         if (args.length < 1) {
