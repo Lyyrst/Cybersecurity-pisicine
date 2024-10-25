@@ -11,7 +11,7 @@ public class Main {
     private static final String SECRET_KEY = "1234567890123456";
 
     public static void main(String[] args) {
-        if (args.length != 2) {
+        if (args.length < 1) {
             throw new Error("Error: Invalid argument: -h for help");
         }
 
