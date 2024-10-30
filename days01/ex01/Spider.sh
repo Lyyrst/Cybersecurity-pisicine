@@ -52,19 +52,10 @@ mkdir -p "$SAVE_DIR"
 
 declare -A VISITED_URLS
 
-# Fonction de décodage d'URL
-decode_url() {
-    printf '%b' "${1//%/\\x}"
-}
-
 download_imgs() {
     local url=$1
     local save_dir=$2
     local recursive_depth=$3
-
-    # Décoder l'URL
-    url=$(decode_url "$url")
-    url=$(echo "$url" | sed 's:/*$::' | tr '[:upper:]' '[:lower:]')
 
     if [ "$recursive_depth" -le 0 ]; then
         return
@@ -77,16 +68,35 @@ download_imgs() {
 
     VISITED_URLS[$url]=1
 
-    html=$(curl -s "$url" | tr -d '\000')
+    html=$(curl -s -A "Mozilla/5.0" -L "$url" | tr -d '\000')
+    
+    echo "==== HTML Content Sample ===="
+    echo "${html:0:1000}"
+    echo "============================="
 
-    img_urls=$(echo "$html" | grep -oP "(http[s]?:\/\/[^\"']*\.(?:$IMG_TYPE))")
+    img_urls=$(echo "$html" | grep -oE "https?://[^\"]+\.(jpg|jpeg|gif|png|bmp)")
+
+    if [ -z "$img_urls" ]; then
+        echo "No direct image URLs found, trying <img src=...> pattern."
+
+        img_urls=$(echo "$html" | grep -oE '<img [^>]*src="([^"]+\.(jpg|jpeg|gif|png|bmp))"' | sed -E 's/.*src="([^"]+)".*/\1/')
+    fi
+
+    echo "Found image URLs:"
+    echo "$img_urls"
+    echo "============================="
+
     for img_url in $img_urls; do
+        if [[ "$img_url" == //* ]]; then
+            img_url="https:$img_url"
+        fi
         echo "Downloading $img_url..."
         curl -s -o "$save_dir/$(basename "$img_url")" "$img_url"
     done
 
+    # Gestion de la récursivité
     if [ "$RECURSIVE" = true ] && [ "$recursive_depth" -gt 0 ]; then
-        link_urls=$(echo "$html" | grep -oP "href=['\"]\K[^\"']+(?=['\"])" | grep -E "^http")
+        link_urls=$(echo "$html" | grep -oE "href=['\"]\K[^\"']+(?=['\"])" | grep -E "^http")
         for link in $link_urls; do
             download_imgs "$link" "$save_dir" $((recursive_depth - 1))
         done
