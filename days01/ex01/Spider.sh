@@ -52,11 +52,18 @@ mkdir -p "$SAVE_DIR"
 
 declare -A VISITED_URLS
 
+# Fonction de décodage d'URL
+decode_url() {
+    printf '%b' "${1//%/\\x}"
+}
+
 download_imgs() {
     local url=$1
     local save_dir=$2
     local recursive_depth=$3
 
+    # Décoder l'URL
+    url=$(decode_url "$url")
     url=$(echo "$url" | sed 's:/*$::' | tr '[:upper:]' '[:lower:]')
 
     if [ "$recursive_depth" -le 0 ]; then
