@@ -70,10 +70,6 @@ download_imgs() {
 
     html=$(curl -s -A "Mozilla/5.0" -L "$url" | tr -d '\000')
     
-    echo "==== HTML Content Sample ===="
-    echo "${html:0:1000}"
-    echo "============================="
-
     img_urls=$(echo "$html" | grep -oE "https?://[^\"]+\.(jpg|jpeg|gif|png|bmp)")
 
     if [ -z "$img_urls" ]; then
@@ -94,9 +90,11 @@ download_imgs() {
         curl -s -o "$save_dir/$(basename "$img_url")" "$img_url"
     done
 
-    # Gestion de la récursivité
     if [ "$RECURSIVE" = true ] && [ "$recursive_depth" -gt 0 ]; then
         link_urls=$(echo "$html" | grep -oE "href=['\"]\K[^\"']+(?=['\"])" | grep -E "^http")
+        echo === link urls ===
+        echo $link_urls
+        echo ===
         for link in $link_urls; do
             download_imgs "$link" "$save_dir" $((recursive_depth - 1))
         done
