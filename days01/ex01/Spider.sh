@@ -69,12 +69,12 @@ download_imgs() {
     VISITED_URLS[$url]=1
 
     html=$(curl -s -A "Mozilla/5.0" -L "$url" | tr -d '\000')
-    
-    img_urls=$(echo "$html" | grep -oE "https?://[^\"]+\.(jpg|jpeg|gif|png|bmp)")
+
+    img_urls=$(echo "$html" | grep -oE "https?://[^\"' ]+\.(jpg|jpeg|gif|png|bmp)(\?[^\"' ]*)?")
 
     if [ -z "$img_urls" ]; then
         echo "No direct image URLs found, trying <img src=...> pattern."
-        img_urls=$(echo "$html" | grep -oE '<img [^>]*src="([^"]+\.(jpg|jpeg|gif|png|bmp))"' | sed -E 's/.*src="([^"]+)".*/\1/')
+        img_urls=$(echo "$html" | grep -oE '<img [^>]*src="([^"]+\.(jpg|jpeg|gif|png|bmp)(\?[^"]*)?)"' | sed -E 's/.*src="([^"]+)".*/\1/')
     fi
 
     echo "Found image URLs:"
@@ -85,8 +85,14 @@ download_imgs() {
         if [[ "$img_url" == //* ]]; then
             img_url="https:$img_url"
         fi
-        echo "Downloading $img_url..."
-        curl -s -o "$save_dir/$(basename "$img_url")" "$img_url"
+
+        if [[ "$img_url" =~ ^https?:// ]]; then
+            filename=$(basename "${img_url%%\?*}")
+            echo "Downloading $img_url as $filename..."
+            curl -s -o "$save_dir/$filename" "$img_url"
+        else
+            echo "Invalid URL detected, skipping: $img_url"
+        fi
     done
 
     if [ "$RECURSIVE" = true ] && [ "$recursive_depth" -gt 0 ]; then
@@ -100,6 +106,7 @@ download_imgs() {
         done
     fi
 }
+
 
 download_imgs "$URL" "$SAVE_DIR" "$RECURSIVE_DEPTH"
 
