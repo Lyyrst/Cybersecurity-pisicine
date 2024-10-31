@@ -74,7 +74,6 @@ download_imgs() {
 
     if [ -z "$img_urls" ]; then
         echo "No direct image URLs found, trying <img src=...> pattern."
-
         img_urls=$(echo "$html" | grep -oE '<img [^>]*src="([^"]+\.(jpg|jpeg|gif|png|bmp))"' | sed -E 's/.*src="([^"]+)".*/\1/')
     fi
 
@@ -91,10 +90,11 @@ download_imgs() {
     done
 
     if [ "$RECURSIVE" = true ] && [ "$recursive_depth" -gt 0 ]; then
-        link_urls=$(echo "$html" | grep -oE "href=['\"]\K[^\"']+(?=['\"])" | grep -E "^http")
-        echo === link urls ===
-        echo $link_urls
-        echo ===
+        link_urls=$(echo "$html" | grep -oE 'href="[^"]+"' | sed -E 's/href="([^"]+)"/\1/' | grep -E "^http")
+        echo "=== link urls ==="
+        echo "$link_urls"
+        echo "================="
+
         for link in $link_urls; do
             download_imgs "$link" "$save_dir" $((recursive_depth - 1))
         done
