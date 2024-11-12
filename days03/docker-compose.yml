@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  tor_service:
+    build: .
+    ports:
+      - "80:80"
+      - "4242:4242"
+      - "9050:9050"
+    restart: unless-stopped
