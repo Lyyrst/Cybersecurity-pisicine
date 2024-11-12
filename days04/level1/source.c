@@ -10,5 +10,5 @@ int main(void) {
 	} else {
 		printf("Good job.\n");
 	}
-	return 0;
+	return (0);
 }
